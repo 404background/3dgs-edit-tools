@@ -1,6 +1,8 @@
 import struct
 import csv
 import os
+import numpy as np
+from . import color_utils
 
 
 def convert_3dgs_to_csv(ply_filename, csv_filename=None, footer_filename=None):
@@ -58,7 +60,31 @@ def convert_3dgs_to_csv(ply_filename, csv_filename=None, footer_filename=None):
         start = i * num_floats * 4
         end = start + num_floats * 4
         floats = struct.unpack("<" + "f" * num_floats, data_section[start:end])
-        data.append(floats)
+        data.append(list(floats))  # Convert to list for easier modification
+
+    # Detect spherical harmonic color coefficients using color_utils
+    r_idx, g_idx, b_idx, is_sh_color = color_utils.detect_color_properties(properties)
+    
+    # If we have color coefficients, normalize them to a more user-friendly range for editing
+    if r_idx is not None and g_idx is not None and b_idx is not None:
+        color_props = [properties[i] for i in [r_idx, g_idx, b_idx]]
+        print(f"Detected color properties: {color_props}, SH color: {is_sh_color}")
+        
+        # Extract color values for analysis and normalization
+        color_values = np.array([[data[row_idx][col_idx] for col_idx in [r_idx, g_idx, b_idx]] 
+                                for row_idx in range(len(data))])
+        
+        # Use color_utils to normalize colors for easier editing
+        normalized_colors, min_val, max_val, is_signed = color_utils.normalize_color_for_editing(color_values, is_sh_color)
+        print(f"Original color range: {min_val} to {max_val}, signed: {is_signed}")
+        
+        # Replace the color values with normalized versions
+        for row_idx in range(len(data)):
+            data[row_idx][r_idx] = normalized_colors[row_idx][0]
+            data[row_idx][g_idx] = normalized_colors[row_idx][1]
+            data[row_idx][b_idx] = normalized_colors[row_idx][2]
+        
+        print("Color values normalized to 0-1 range for easier editing")
 
     # Save to CSV
     with open(csv_filename, "w", newline="") as csvfile:
@@ -70,6 +96,7 @@ def convert_3dgs_to_csv(ply_filename, csv_filename=None, footer_filename=None):
     with open(footer_filename, "wb") as footer_file:
         footer_file.write(footer_section)
     
+    print(f"Successfully converted 3D Gaussian Splatting data to CSV format ({vertex_count} vertices)")
     return csv_filename, footer_filename
 
 
