@@ -9,9 +9,11 @@ A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV form
 - Convert 3DGS format to standard point cloud format
 - Convert point cloud data to/from CSV format for easy editing
 - Tools for comparing 3DGS files and analyzing differences
-- Batch processing for converting multiple files
 - Verified compatibility with SuperSplat for visualization
 - Point cloud data verified with CloudCompare
+
+![Haniwa model in 3D Gaussian Splatting format](images/haniwa.png)
+![Haniwa model converted to point cloud format in CloudCompare](images/haniwa_pointcloud.png)
 
 ## Project Structure
 
@@ -62,13 +64,13 @@ cd 3dgs-edit-tools
 from src import convert_3dgs_to_csv, convert_csv_to_3dgs
 
 # Convert PLY file to CSV
-csv_path, footer_path = convert_3dgs_to_csv('model.ply')
+csv_path, _ = convert_3dgs_to_csv('model.ply')
 
 # Write your code to edit the CSV file here
 # ...
 
 # Convert edited CSV back to PLY
-restored_ply = convert_csv_to_3dgs(csv_path, footer_path)
+restored_ply = convert_csv_to_3dgs(csv_path, None)
 ```
 
 ### Point Cloud Workflows
@@ -115,13 +117,13 @@ For more information about available tools, see the [tools/README.md](tools/READ
 Convert PLY to CSV:
 
 ```bash
-python -m src.gs_to_csv input.ply --output_csv output.csv --footer footer.tmp
+python -m src.gs_to_csv input.ply --output_csv output.csv
 ```
 
 Convert CSV to PLY:
 
 ```bash
-python -m src.csv_to_3dgs input.csv footer.tmp --output_ply output.ply
+python -m src.csv_to_3dgs input.csv --output_ply output.ply
 ```
 
 Convert point cloud to CSV:
@@ -153,25 +155,24 @@ All point cloud data conversions have been verified using CloudCompare to ensure
 
 ### Core Conversion Functions
 
-#### convert_3dgs_to_csv(ply_filename, csv_filename=None, footer_filename=None)
+#### convert_3dgs_to_csv(ply_filename, csv_filename=None)
 
 Converts 3DGS format (PLY) data to CSV format.
 
 **Arguments**:
 - `ply_filename` (str): Path to the input PLY file
 - `csv_filename` (str, optional): Path to the output CSV file. If not specified, it's automatically generated from the input filename
-- `footer_filename` (str, optional): Path to save the footer data. If not specified, it's automatically generated from the input filename
 
 **Returns**:
-- tuple: (csv_filename, footer_filename) - Paths of the generated files
+- tuple: (csv_filename, None) - Paths of the generated files
 
-#### convert_csv_to_3dgs(csv_filename, footer_filename, output_ply_filename=None)
+#### convert_csv_to_3dgs(csv_filename, footer_filename=None, output_ply_filename=None)
 
 Converts CSV format data to 3DGS format (PLY).
 
 **Arguments**:
 - `csv_filename` (str): Path to the input CSV file
-- `footer_filename` (str): Path to the file containing footer data
+- `footer_filename` (str, optional): Path to the file containing footer data. If not specified, it's automatically generated from the input filename
 - `output_ply_filename` (str, optional): Path to the output PLY file. If not specified, it's automatically generated from the input filename
 
 **Returns**:

@@ -48,7 +48,7 @@ def main():
     
     # Define simplified file paths for the workflow
     pointcloud_file = os.path.join(converted_dir, f"{input_base}_pointcloud.ply")
-    pointcloud_csv_file = os.path.join(converted_dir, f"{input_base}.csv")  # Single CSV file
+    pointcloud_csv_file = os.path.join(converted_dir, f"{input_base}_pointcloud.csv")  # Changed to _pointcloud.csv
     edited_pointcloud_file = os.path.join(converted_dir, f"{input_base}_from_csv.ply")
     output_3dgs_file = os.path.join(converted_dir, f"{input_base}_from_pointcloud.ply")
 

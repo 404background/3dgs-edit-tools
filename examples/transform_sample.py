@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
-Coordinate transformation sample for Haniwa.ply
+Coordinate transformation sample for 3D Gaussian Splatting PLY files
 
 This sample performs the following operations:
-1. Convert Haniwa.ply to CSV format
+1. Convert PLY file to CSV format
 2. Transform 3D coordinates (scaling, rotation, translation, etc.)
 3. Convert the transformed CSV data back to PLY format
 
 All output files are saved in the converted folder.
+
+Usage:
+    python transform_sample.py [--input_ply INPUT_PLY_FILE]
 """
 
 import os
@@ -15,6 +18,7 @@ import sys
 import csv
 import math
 import numpy as np
+import argparse
 
 # Add the source code directory to the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -34,9 +38,23 @@ def rotate_z(x, y, angle_deg):
 
 
 def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="3D Gaussian Splatting coordinate transformation sample")
+    parser.add_argument("--input_ply", default="Haniwa.ply", help="Input 3D Gaussian Splatting PLY file")
+    args = parser.parse_args()
+    
     # Sample file path
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ply = os.path.join(current_dir, 'Haniwa.ply')
+    input_ply = os.path.join(current_dir, args.input_ply)
+    
+    # Extract filename without extension for output file naming
+    input_filename = os.path.basename(args.input_ply)
+    input_base = os.path.splitext(input_filename)[0]
+    
+    # Check if the input file exists
+    if not os.path.exists(input_ply):
+        print(f"Error: Input file not found: {input_ply}")
+        return
     
     # Check and create the converted directory
     converted_dir = os.path.join(current_dir, 'converted')
@@ -44,12 +62,11 @@ def main():
         os.makedirs(converted_dir)
         print(f"Created 'converted' directory: {converted_dir}")
     
-    print(f"Performing coordinate transformation for Haniwa.ply: {input_ply}")
+    print(f"Performing coordinate transformation for {input_filename}: {input_ply}")
     
     # Convert PLY file to CSV
-    csv_path = os.path.join(converted_dir, 'Haniwa.csv')
-    footer_path = os.path.join(converted_dir, 'Haniwa_footer.tmp')
-    csv_path, footer_path = convert_3dgs_to_csv(input_ply, csv_path, footer_path)
+    csv_path = os.path.join(converted_dir, f"{input_base}.csv")
+    csv_path, _ = convert_3dgs_to_csv(input_ply, csv_path)
     print(f"Converted to CSV: {csv_path}")
     
     # Read the CSV file
@@ -77,7 +94,7 @@ def main():
     rotation_angle = 45
 
     # Set the path for the modified file
-    transformed_csv_path = os.path.join(converted_dir, 'Haniwa_transformed.csv')
+    transformed_csv_path = os.path.join(converted_dir, f"{input_base}_transformed.csv")
     
     print("\n=== Transforming data ===")
     print(f"- X-axis: {scale_factor_x}x scale")
@@ -109,8 +126,8 @@ def main():
     print(f"Saved transformed CSV: {transformed_csv_path}")
     
     # Convert the transformed CSV back to PLY
-    output_ply = os.path.join(converted_dir, 'Haniwa_transformed.ply')
-    restored_ply = convert_csv_to_3dgs(transformed_csv_path, footer_path, output_ply)
+    output_ply = os.path.join(converted_dir, f"{input_base}_transformed.ply")
+    restored_ply = convert_csv_to_3dgs(transformed_csv_path, None, output_ply)
     print(f"\nConverted transformed data to PLY: {restored_ply}")
     
     print("\n=== Transformation summary ===")

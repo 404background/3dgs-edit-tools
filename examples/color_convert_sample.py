@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """
-Simple script to change Haniwa.ply colors to black
+Simple script to change 3D Gaussian Splatting PLY colors to black
 
-Created based on haniwa_sample.py with minimal changes to only modify colors to black.
 All generated files will be saved in the 'converted' folder.
+
+Usage:
+    python color_convert_sample.py [--input_ply INPUT_PLY_FILE]
 """
 
 import os
 import sys
 import csv
+import argparse
 
 # Add the source code directory to the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -18,9 +21,23 @@ from src import convert_3dgs_to_csv, convert_csv_to_3dgs
 
 
 def main():
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="3D Gaussian Splatting color conversion sample")
+    parser.add_argument("--input_ply", default="Haniwa.ply", help="Input 3D Gaussian Splatting PLY file")
+    args = parser.parse_args()
+    
     # Sample file path
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    input_ply = os.path.join(current_dir, 'Haniwa.ply')
+    input_ply = os.path.join(current_dir, args.input_ply)
+    
+    # Extract filename without extension for output file naming
+    input_filename = os.path.basename(args.input_ply)
+    input_base = os.path.splitext(input_filename)[0]
+    
+    # Check if the input file exists
+    if not os.path.exists(input_ply):
+        print(f"Error: Input file not found: {input_ply}")
+        return
     
     # Check and create the converted directory
     converted_dir = os.path.join(current_dir, 'converted')
@@ -28,14 +45,12 @@ def main():
         os.makedirs(converted_dir)
         print(f"Created 'converted' directory: {converted_dir}")
     
-    print(f"Processing Haniwa.ply: {input_ply}")
+    print(f"Processing {input_filename}: {input_ply}")
     
     # Convert PLY file to CSV
-    csv_path = os.path.join(converted_dir, 'Haniwa.csv')
-    footer_path = os.path.join(converted_dir, 'Haniwa_footer.tmp')
-    csv_path, footer_path = convert_3dgs_to_csv(input_ply, csv_path, footer_path)
+    csv_path = os.path.join(converted_dir, f"{input_base}.csv")
+    csv_path, _ = convert_3dgs_to_csv(input_ply, csv_path)
     print(f"Converted to CSV: {csv_path}")
-    print(f"Saved footer data: {footer_path}")
     
     # Read the CSV file
     with open(csv_path, 'r') as csvfile:
@@ -56,7 +71,7 @@ def main():
         return
     
     # Set the path for the modified file
-    modified_csv_path = os.path.join(converted_dir, 'Haniwa_black.csv')
+    modified_csv_path = os.path.join(converted_dir, f"{input_base}_black.csv")
     
     # Modify CSV data (change colors to black)
     print("\n=== Editing data ===")
@@ -76,8 +91,8 @@ def main():
     print(f"Saved modified CSV: {modified_csv_path}")
     
     # Convert edited CSV back to PLY
-    output_ply = os.path.join(converted_dir, 'Haniwa_black.ply')
-    restored_ply = convert_csv_to_3dgs(modified_csv_path, footer_path, output_ply)
+    output_ply = os.path.join(converted_dir, f"{input_base}_black.ply")
+    restored_ply = convert_csv_to_3dgs(modified_csv_path, None, output_ply)
     print(f"\nConverted modified data to PLY: {restored_ply}")
     
     print("\n=== Conversion summary ===")

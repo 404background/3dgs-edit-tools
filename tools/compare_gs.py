@@ -210,13 +210,11 @@ def compare_3dgs_files(file1, file2, output_dir=None, tolerance=1e-6, visualize=
     
     try:
         # Convert both files to CSV
-        csv1_path, footer1_path = convert_3dgs_to_csv(file1, 
-                                               os.path.join(output_dir, "file1.csv"),
-                                               os.path.join(output_dir, "file1.footer"))
+        csv1_path, _ = convert_3dgs_to_csv(file1, 
+                                   os.path.join(output_dir, "file1.csv"))
         
-        csv2_path, footer2_path = convert_3dgs_to_csv(file2, 
-                                               os.path.join(output_dir, "file2.csv"),
-                                               os.path.join(output_dir, "file2.footer"))
+        csv2_path, _ = convert_3dgs_to_csv(file2, 
+                                   os.path.join(output_dir, "file2.csv"))
         
         # Read CSV files
         df1 = read_csv_as_dataframe(csv1_path)

@@ -5,13 +5,13 @@ import numpy as np
 from . import color_utils
 
 
-def convert_csv_to_3dgs(csv_filename, footer_filename, output_ply_filename=None):
+def convert_csv_to_3dgs(csv_filename, footer_filename=None, output_ply_filename=None):
     """
     Convert CSV format data to 3D Gaussian Splatting format (.ply)
     
     Args:
         csv_filename (str): Path to the input CSV file
-        footer_filename (str): Path to the file containing footer data
+        footer_filename (str, optional): Path to the footer file (deprecated, not used)
         output_ply_filename (str, optional): Path to the output PLY file. If not specified, it's automatically generated from the input filename
         
     Returns:
@@ -22,6 +22,10 @@ def convert_csv_to_3dgs(csv_filename, footer_filename, output_ply_filename=None)
         base_name = os.path.splitext(csv_filename)[0]
         output_ply_filename = f"{base_name}_restored.ply"
     
+    # Note: footer_filename is ignored as footer data is no longer used
+    if footer_filename:
+        print(f"Note: Footer file {footer_filename} is ignored (footers no longer used)")
+        
     # Load CSV data
     with open(csv_filename, "r") as f:
         reader = csv.reader(f)
@@ -116,10 +120,6 @@ end_header
                 print(f"WARNING: Error writing vertex data: {e}")
                 # Fill with zeros if an error occurs
                 f.write(struct.pack("<" + "f" * num_floats, *[0.0] * num_floats))
-        
-        # Footer
-        with open(footer_filename, "rb") as footer_file:
-            f.write(footer_file.read())
 
     print(f"Successfully converted CSV data to 3D Gaussian Splatting format ({vertex_count} vertices)")
     return output_ply_filename
@@ -131,14 +131,14 @@ def main():
     
     parser = argparse.ArgumentParser(description='Convert CSV format data to 3D Gaussian Splatting format')
     parser.add_argument('input_csv', help='Input CSV file')
-    parser.add_argument('footer_file', help='File containing footer data')
+    parser.add_argument('--footer', help='Footer filename (deprecated, not used)')
     parser.add_argument('--output_ply', help='Output PLY filename (default: input_filename_restored.ply)')
     
     args = parser.parse_args()
     
     output_path = convert_csv_to_3dgs(
-        args.input_csv, 
-        args.footer_file, 
+        args.input_csv,
+        args.footer,
         args.output_ply
     )
     
