@@ -1,6 +1,9 @@
 *.csv
 *.tmp
 converted/
+pyenv*/
+*.ply
+!examples/Haniwa.ply
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

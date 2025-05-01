@@ -1,3 +1,9 @@
+<!-- 
+NOTE FOR AI CONTRIBUTORS:
+All content in this repository, including code comments, documentation, and commit messages, 
+should be written in English only. Please ensure all contributions follow this guideline.
+-->
+
 # 3DGS Edit Tools
 
 A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV format, edit it, and convert it back to 3DGS format.
@@ -12,12 +18,12 @@ A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV form
 - Verified compatibility with SuperSplat for visualization
 - Point cloud data verified with CloudCompare
 
-![Haniwa model in 3D Gaussian Splatting format](images/haniwa.png)
-![Haniwa model converted to point cloud format in CloudCompare](images/haniwa_pointcloud.png)
+![Haniwa model in 3D Gaussian Splatting format](https://raw.githubusercontent.com/404background/3dgs-edit-tools/main/images/haniwa.png)
+![Haniwa model converted to point cloud format in CloudCompare](https://raw.githubusercontent.com/404background/3dgs-edit-tools/main/images/haniwa_pointcloud.png)
 
 ## Project Structure
 
-- **src/**: Core functionality for converting between formats (no external dependencies)
+- **src/**: Core functionality for converting between formats
 - **tools/**: Additional utilities for analyzing and comparing 3DGS files
 - **examples/**: Sample code demonstrating usage of the library
 - **images/**: Sample images and visualizations
@@ -26,14 +32,38 @@ A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV form
 
 ### Core Library (src/)
 
-The core library in the `src/` folder has **no external dependencies**. It uses only the Python standard library, making it easy to use without additional installation steps.
+The core library in the `src/` folder requires **numpy** for numerical operations. This dependency is automatically installed when you install the package.
 
 ### Tools (tools/)
 
-The tools in the `tools/` folder require the following dependencies:
+The tools in the `tools/` folder require additional dependencies:
 
 ```bash
-pip install numpy pandas matplotlib
+pip install pandas matplotlib
+```
+
+These are automatically installed if you install the package with the `[tools]` extra.
+
+## Installation
+
+### From PyPI (recommended)
+
+```bash
+# Basic installation with core functionality
+pip install 3dgs-edit-tools
+
+# Complete installation with tools for analysis and comparison
+pip install 3dgs-edit-tools[tools]
+```
+
+### From Source
+
+Clone this repository:
+
+```bash
+git clone https://github.com/404background/3dgs-edit-tools.git
+cd 3dgs-edit-tools
+pip install -e .  # Install in development mode
 ```
 
 ## Why CSV Format?
@@ -46,15 +76,6 @@ This library uses CSV format as an intermediate step for editing 3D Gaussian Spl
 - **Transparency**: The structure and values are visible, making it easier to understand the data
 
 Point cloud data is also converted to CSV format before editing to maintain the same benefits.
-
-## Installation
-
-Clone this repository:
-
-```bash
-git clone https://github.com/404background/3dgs-edit-tools.git
-cd 3dgs-edit-tools
-```
 
 ## Usage
 
@@ -104,7 +125,7 @@ To use the comparison tool for analyzing differences between 3DGS files:
 
 ```bash
 # First install required dependencies
-pip install numpy pandas matplotlib
+pip install pandas matplotlib
 
 # Run the comparison tool
 python -m tools.compare_gs path/to/original.ply path/to/modified.ply --output-dir comparison_results
@@ -114,28 +135,48 @@ For more information about available tools, see the [tools/README.md](tools/READ
 
 ### From Command Line
 
+After installation, the package provides several command-line executables for easy use:
+
 Convert PLY to CSV:
 
 ```bash
-python -m src.gs_to_csv input.ply --output_csv output.csv
+3dgs-to-csv input.ply --output_csv output.csv
 ```
 
 Convert CSV to PLY:
 
 ```bash
-python -m src.csv_to_3dgs input.csv --output_ply output.ply
+csv-to-3dgs input.csv --output_ply output.ply
+```
+
+Convert 3DGS to point cloud:
+
+```bash
+3dgs-to-pointcloud input.ply --output_ply output_pointcloud.ply
+```
+
+Convert point cloud to 3DGS:
+
+```bash
+pointcloud-to-3dgs input_pointcloud.ply original.ply --output_ply restored.ply
 ```
 
 Convert point cloud to CSV:
 
 ```bash
-python -m src.pointcloud_to_csv ply2csv input_pointcloud.ply --output_csv output.csv
+pointcloud-to-csv ply2csv input_pointcloud.ply --output_csv output.csv
 ```
 
 Convert CSV to point cloud:
 
 ```bash
-python -m src.pointcloud_to_csv csv2ply input.csv --output_ply output.ply --color_type uchar
+csv-to-pointcloud input.csv --output_ply output.ply --color_type uchar
+```
+
+Compare two 3DGS files:
+
+```bash
+compare-gs original.ply modified.ply --output-dir comparison_results
 ```
 
 ### Sample Code

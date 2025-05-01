@@ -2,11 +2,11 @@
 
 This folder contains sample code for editing 3D Gaussian Splatting format data. The sample data "Haniwa.ply" is included for these examples, but you can use any 3D Gaussian Splatting PLY file.
 
-![Haniwa model imported into Scaniverse](../images/haniwa.png)
+![Haniwa model imported into Scaniverse](https://raw.githubusercontent.com/404background/3dgs-edit-tools/main/images/haniwa.png)
 
 All sample output files have been verified to be readable and display correctly in the Supersplat viewer for 3D Gaussian Splatting files and CloudCompare for point cloud files. 
 
-![Haniwa point cloud visualization in CloudCompare](../images/haniwa_pointcloud.png)
+![Haniwa point cloud visualization in CloudCompare](https://raw.githubusercontent.com/404background/3dgs-edit-tools/main/images/haniwa_pointcloud.png)
 
 Each sample's output has been confirmed to load without errors, ensuring proper compatibility with both formats.
 

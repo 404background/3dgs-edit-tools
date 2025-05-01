@@ -2,6 +2,35 @@
 
 This folder contains tools for working with 3D Gaussian Splatting (3DGS) data.
 
+## build_package.py - Package Build and Publishing Tool
+
+This tool provides utilities for building and publishing the 3DGS Editor package. It offers all the functionality needed to publish the package to PyPI.
+
+### Key Features
+
+- Package building (source distribution and wheel packages)
+- Publishing to TestPyPI (for testing)
+- Publishing to production PyPI
+- Cleanup of build directories
+
+### Usage
+
+```bash
+# Build the package
+python -m tools.build_package build
+
+# Publish to TestPyPI (for testing)
+python -m tools.build_package publish
+
+# Publish to production PyPI
+python -m tools.build_package publish-prod
+
+# Clean build directories
+python -m tools.build_package clean
+```
+
+For detailed instructions, refer to `PUBLISHING.md`.
+
 ## compare_gs.py - 3DGS Comparison Tool
 
 This tool performs detailed analysis of differences between two 3DGS PLY files. By converting to CSV format, it enables accurate identification of differences in the data.
