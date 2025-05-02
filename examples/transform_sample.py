@@ -10,7 +10,9 @@ This sample performs the following operations:
 All output files are saved in the converted folder.
 
 Usage:
-    python transform_sample.py [--input_ply INPUT_PLY_FILE]
+    python transform_sample.py [--input_ply INPUT_PLY_FILE] [--rotation-axis AXIS] 
+    [--rotation-angle DEGREES] [--translate-x X] [--translate-y Y] [--translate-z Z]
+    [--scale-x X] [--scale-y Y] [--scale-z Z]
 """
 
 import os
@@ -19,6 +21,7 @@ import csv
 import math
 import numpy as np
 import argparse
+from scipy.spatial.transform import Rotation as R
 
 # Add the source code directory to the path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -27,20 +30,90 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from src import convert_3dgs_to_csv, convert_csv_to_3dgs
 
 
-def rotate_z(x, y, angle_deg):
-    """Apply rotation around Z axis"""
+def rotate_point(x, y, z, angle_deg, axis='z'):
+    """Apply rotation around specified axis"""
     angle_rad = math.radians(angle_deg)
-    cos_val = math.cos(angle_rad)
-    sin_val = math.sin(angle_rad)
-    new_x = x * cos_val - y * sin_val
-    new_y = x * sin_val + y * cos_val
-    return new_x, new_y
+    
+    if axis == 'z':
+        # Rotation around Z axis
+        cos_val = math.cos(angle_rad)
+        sin_val = math.sin(angle_rad)
+        new_x = x * cos_val - y * sin_val
+        new_y = x * sin_val + y * cos_val
+        new_z = z
+    elif axis == 'y':
+        # Rotation around Y axis
+        cos_val = math.cos(angle_rad)
+        sin_val = math.sin(angle_rad)
+        new_x = x * cos_val + z * sin_val
+        new_y = y
+        new_z = -x * sin_val + z * cos_val
+    elif axis == 'x':
+        # Rotation around X axis
+        cos_val = math.cos(angle_rad)
+        sin_val = math.sin(angle_rad)
+        new_x = x
+        new_y = y * cos_val - z * sin_val
+        new_z = y * sin_val + z * cos_val
+    else:
+        # No rotation for unknown axis
+        new_x, new_y, new_z = x, y, z
+    
+    return new_x, new_y, new_z
+
+
+def rotate_quaternion(quat, angle_deg, axis='z'):
+    """
+    Apply rotation to an existing quaternion
+    
+    Args:
+        quat: List of 4 values [w, x, y, z] representing the quaternion
+        angle_deg: Rotation angle in degrees
+        axis: Axis of rotation ('x', 'y', or 'z')
+        
+    Returns:
+        List of 4 values representing the new quaternion
+    """
+    # Convert input quaternion to scipy Rotation object
+    # 3DGS may use [x, y, z, w] format, so reorder if needed
+    orig_rotation = R.from_quat([quat[1], quat[2], quat[3], quat[0]])
+    
+    # Create rotation around specified axis
+    angle_rad = math.radians(angle_deg)
+    if axis == 'z':
+        rotation_matrix = R.from_rotvec([0, 0, angle_rad])
+    elif axis == 'y':
+        rotation_matrix = R.from_rotvec([0, angle_rad, 0])
+    elif axis == 'x':
+        rotation_matrix = R.from_rotvec([angle_rad, 0, 0])
+    else:
+        # No rotation for unknown axis
+        return quat
+    
+    # Apply the rotation
+    new_rotation = rotation_matrix * orig_rotation
+    
+    # Convert back to quaternion in [w, x, y, z] format
+    quat_xyzw = new_rotation.as_quat()
+    # Return in [w, x, y, z] format
+    return [quat_xyzw[3], quat_xyzw[0], quat_xyzw[1], quat_xyzw[2]]
 
 
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="3D Gaussian Splatting coordinate transformation sample")
     parser.add_argument("--input_ply", default="Haniwa.ply", help="Input 3D Gaussian Splatting PLY file")
+    # Rotation settings
+    parser.add_argument("--rotation-axis", choices=['x', 'y', 'z'], default='z', help="Rotation axis (x, y, or z)")
+    parser.add_argument("--rotation-angle", type=float, default=45.0, help="Rotation angle in degrees")
+    # Scaling settings
+    parser.add_argument("--scale-x", type=float, default=2.0, help="Scale factor for X axis")
+    parser.add_argument("--scale-y", type=float, default=1.0, help="Scale factor for Y axis")
+    parser.add_argument("--scale-z", type=float, default=1.0, help="Scale factor for Z axis")
+    # Translation settings
+    parser.add_argument("--translate-x", type=float, default=0.0, help="Translation along X axis")
+    parser.add_argument("--translate-y", type=float, default=0.0, help="Translation along Y axis")
+    parser.add_argument("--translate-z", type=float, default=0.0, help="Translation along Z axis")
     args = parser.parse_args()
     
     # Sample file path
@@ -87,18 +160,40 @@ def main():
     else:
         print("Coordinate attributes not found. Using the first 3 columns as default.")
         x_idx, y_idx, z_idx = 0, 1, 2
+        
+    # Find quaternion indices (rotation/orientation)
+    quat_indices = []
+    for i, attr in enumerate(header):
+        if attr == 'rot_0' or attr == 'rot_1' or attr == 'rot_2' or attr == 'rot_3' or attr == 'rotation_0' or attr == 'rotation_1' or attr == 'rotation_2' or attr == 'rotation_3':
+            quat_indices.append((i, attr))
     
-    # Scale: double the width
-    scale_factor_x = 2.0
-    # Rotation: 45 degrees around Z axis
-    rotation_angle = 45
+    if len(quat_indices) >= 4:
+        print(f"Found quaternion attributes: {quat_indices}")
+        q_w_idx, q_x_idx, q_y_idx, q_z_idx = [idx for idx, _ in quat_indices[:4]]
+        has_quaternions = True
+    else:
+        print("Quaternion attributes not found. Only position will be transformed.")
+        has_quaternions = False
+    
+    # Get transformation parameters
+    rotation_axis = args.rotation_axis
+    rotation_angle = args.rotation_angle
+    scale_x = args.scale_x
+    scale_y = args.scale_y
+    scale_z = args.scale_z
+    translate_x = args.translate_x
+    translate_y = args.translate_y
+    translate_z = args.translate_z
 
     # Set the path for the modified file
     transformed_csv_path = os.path.join(converted_dir, f"{input_base}_transformed.csv")
     
     print("\n=== Transforming data ===")
-    print(f"- X-axis: {scale_factor_x}x scale")
-    print(f"- Z-axis rotation: {rotation_angle} degrees")
+    print(f"- Scale: X:{scale_x}x, Y:{scale_y}x, Z:{scale_z}x")
+    print(f"- Rotation: {rotation_angle} degrees around {rotation_axis.upper()} axis")
+    print(f"- Translation: X:{translate_x}, Y:{translate_y}, Z:{translate_z}")
+    if has_quaternions:
+        print("- Ellipsoid orientations will also be rotated")
     
     # Transform the data
     with open(transformed_csv_path, 'w', newline='') as csvfile:
@@ -109,17 +204,47 @@ def main():
             # Get coordinates
             x = float(row[x_idx])
             y = float(row[y_idx])
-            # z = float(row[z_idx])  # Z coordinate is not modified
+            z = float(row[z_idx])
             
             # Apply scaling
-            x *= scale_factor_x
+            x *= scale_x
+            y *= scale_y
+            z *= scale_z
             
-            # Apply rotation
-            x, y = rotate_z(x, y, rotation_angle)
+            # Apply rotation to position
+            x, y, z = rotate_point(x, y, z, rotation_angle, rotation_axis)
+            
+            # Apply translation
+            x += translate_x
+            y += translate_y
+            z += translate_z
             
             # Update coordinates
             row[x_idx] = str(x)
             row[y_idx] = str(y)
+            row[z_idx] = str(z)
+            
+            # Apply rotation to quaternion orientation if available
+            if has_quaternions:
+                try:
+                    # Get quaternion values
+                    quat = [
+                        float(row[q_w_idx]),
+                        float(row[q_x_idx]),
+                        float(row[q_y_idx]),
+                        float(row[q_z_idx])
+                    ]
+                    
+                    # Apply rotation to quaternion
+                    new_quat = rotate_quaternion(quat, rotation_angle, rotation_axis)
+                    
+                    # Update quaternion values
+                    row[q_w_idx] = str(new_quat[0])
+                    row[q_x_idx] = str(new_quat[1])
+                    row[q_y_idx] = str(new_quat[2])
+                    row[q_z_idx] = str(new_quat[3])
+                except (ValueError, IndexError) as e:
+                    print(f"Warning: Could not update quaternion in a row: {e}")
             
             writer.writerow(row)
     
@@ -137,7 +262,15 @@ def main():
     print(f"Final PLY file: {restored_ply}")
     print(f"\nAll output files were saved in {converted_dir}")
     print("\nPlease compare the original PLY file with the transformed PLY file in a 3D viewer.")
-    print("The width should be doubled and rotated 45 degrees around the Z axis.")
+    transformation_desc = []
+    if any([scale_x != 1.0, scale_y != 1.0, scale_z != 1.0]):
+        transformation_desc.append(f"Scaling (X:{scale_x}x, Y:{scale_y}x, Z:{scale_z}x)")
+    if rotation_angle != 0:
+        transformation_desc.append(f"{rotation_angle} degree rotation around {rotation_axis.upper()} axis")
+    if any([translate_x != 0, translate_y != 0, translate_z != 0]):
+        transformation_desc.append(f"Translation (X:{translate_x}, Y:{translate_y}, Z:{translate_z})")
+    print(f"Applied transformations: {', '.join(transformation_desc)}")
+    print("Ellipsoid orientations are correctly rotated as well.")
 
 
 if __name__ == "__main__":
