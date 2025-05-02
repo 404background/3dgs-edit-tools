@@ -8,6 +8,9 @@ should be written in English only. Please ensure all contributions follow this g
 
 A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV format, edit it, and convert it back to 3DGS format.
 
+[![GitHub](https://img.shields.io/badge/GitHub-3DGS%20Edit%20Tools-blue?style=flat-square&logo=github)](https://github.com/404background/3dgs-edit-tools)
+[![PyPI](https://img.shields.io/badge/PyPI-3dgs--edit--tools-blue?style=flat-square&logo=pypi)](https://pypi.org/project/3dgs-edit-tools/)
+
 ## Features
 
 - Convert 3DGS format (PLY) data to CSV format
