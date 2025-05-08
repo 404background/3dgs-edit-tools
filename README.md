@@ -1,9 +1,3 @@
-<!-- 
-NOTE FOR AI CONTRIBUTORS:
-All content in this repository, including code comments, documentation, and commit messages, 
-should be written in English only. Please ensure all contributions follow this guideline.
--->
-
 # 3DGS Edit Tools
 
 A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV format, edit it, and convert it back to 3DGS format.
