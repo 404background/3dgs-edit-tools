@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="3dgs-edit-tools",
-    version="0.1.1",
+    version="0.2.0",
     author="404background",
     author_email="404background@gmail.com",
     description="A Python library to convert, edit, and manage 3D Gaussian Splatting data",
@@ -28,10 +28,12 @@ setup(
             "pointcloud-to-csv=src.pointcloud_to_csv:main",
             "csv-to-pointcloud=src.pointcloud_to_csv:main_csv_to_ply",
             "compare-gs=tools.compare_gs:main",
+            "3dgs-to-mesh=src.pointcloud_to_mesh:main_3dgs_to_mesh",
         ],
     },
     install_requires=[
         "numpy",
+        "open3d",
     ],
     extras_require={
         "tools": ["pandas", "matplotlib"],
