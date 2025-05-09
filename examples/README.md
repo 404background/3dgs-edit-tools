@@ -13,7 +13,7 @@ This folder contains sample code for editing 3D Gaussian Splatting format data u
 ![Haniwa mesh conversion example](https://raw.githubusercontent.com/404background/3dgs-edit-tools/main/images/haniwa_mesh.png)
 *Mesh conversion result using the hybrid method with ultra quality settings*
 
-All sample outputs have been confirmed to work with Supersplat viewer (3DGS) and CloudCompare (point clouds). For mesh conversion, parameter adjustment is crucial for creating smooth meshes with fewer holes - results depend significantly on the chosen reconstruction method and parameters.
+All sample outputs have been confirmed to work with Supersplat viewer (3DGS) and CloudCompare (point clouds). Point cloud outputs have been extensively tested in CloudCompare for proper structure, color representation, and export compatibility. Mesh outputs have been verified with Blender to confirm proper mesh topology, material support, and visualization compatibility. For mesh conversion, parameter adjustment is crucial for creating smooth meshes with fewer holes - results depend significantly on the chosen reconstruction method and parameters.
 
 ## Command-Line Tools
 
@@ -29,6 +29,7 @@ The following executable tools are available in the `pyenv/Scripts` directory:
 | `pointcloud-to-3dgs.exe` | Convert point cloud to 3D Gaussian Splatting |
 | `csv-to-pointcloud.exe` | Convert CSV to point cloud |
 | `pointcloud-to-csv.exe` | Convert point cloud to CSV |
+| `merge-gs.exe` | Merge multiple 3D Gaussian Splatting files |
 
 ### Example Usage
 
@@ -38,6 +39,9 @@ compare-gs original.ply modified.ply --output-dir comparison_results
 
 # Convert 3D Gaussian Splatting to mesh
 3dgs-to-mesh input.ply --output output_mesh.obj --method hybrid --quality high
+
+# Merge two 3D Gaussian Splatting files
+merge-gs file1.ply file2.ply --output merged.ply --translate-x 0.1
 ```
 
 ## Sample Overview
@@ -74,6 +78,11 @@ compare-gs original.ply modified.ply --output-dir comparison_results
    - Generate detailed differences in CSV format
    - Visualize differences with color-coded points
    - Print summary of differences
+
+7. **merge_gs_sample.py** - Sample for merging multiple 3DGS files
+   - Create a transformed copy of an input 3DGS file
+   - Apply translation to the copy (10cm on X-axis by default)
+   - Merge the original and transformed files into a single 3DGS file
 
 ## How to Run the Samples
 
@@ -147,7 +156,20 @@ Running this sample will generate the following files:
 - `comparison_results/differences.csv` - Detailed information about all differences
 - `comparison_results/diff_visualization.png` - 3D visualization showing points with differences
 
-#### Mesh Conversion Parameters
+### 7. File Merging Sample
+
+```bash
+python merge_gs_sample.py [--input_ply YOUR_MODEL.ply] [--translation 0.2]
+```
+
+Running this sample will generate the following files:
+- `converted/MODEL_transformed.ply` - A copy of the original model with X-axis translation
+- `converted/MODEL_merged.ply` - Merged model containing both the original and transformed copy
+- `converted/MODEL_merged_merged.csv` - Intermediate CSV file containing the combined data
+
+The resulting merged PLY file will contain two copies of the model - the original one and a copy that has been moved by the specified translation distance (default: 10cm along X-axis). This demonstrates how multiple 3DGS objects can be combined into a single scene.
+
+## Mesh Conversion Parameters
 
 The `mesh_convert_sample.py` script and the `3dgs-to-mesh.exe` tool offer various parameters to control the quality and characteristics of the generated mesh:
 
@@ -165,14 +187,14 @@ The `mesh_convert_sample.py` script and the `3dgs-to-mesh.exe` tool offer variou
 | `--depth` | integer | 0 (auto) | Override default poisson reconstruction depth |
 | `--scale` | float | 1.0 | Scale factor for the mesh |
 
-#### Mesh Reconstruction Methods
+### Mesh Reconstruction Methods
 
 - **poisson**: Creates watertight meshes with smooth surfaces but may lose some detail. Good for objects with continuous surfaces.
 - **ball_pivoting**: Preserves original points well but may create holes. Good for flat surfaces and detailed models.
 - **alpha_shape**: Similar to ball pivoting but with better hole handling. Good for maintaining shape boundaries.
 - **hybrid**: Combines multiple methods for optimal results. Recommended for most 3D Gaussian Splatting models.
 
-#### Quality Presets
+### Quality Presets
 
 The quality presets affect multiple parameters including poisson depth, normal estimation quality, and mesh refinement:
 
@@ -181,10 +203,20 @@ The quality presets affect multiple parameters including poisson depth, normal e
 - **high**: Detailed reconstruction with good smoothing (Poisson depth ~10)
 - **ultra**: Maximum detail preservation with enhanced processing (Poisson depth ~11-12)
 
-#### Optimization Tips
+### Optimization Tips
 
 For smoother mesh generation with reduced surface irregularities:
 
 1. **For maximum smoothness**: Use `--super_smooth --method hybrid --quality ultra --fill_holes --aggressive_holes --neighbors 60 --density 0.005`
 2. **For balance between detail and smoothness**: Use `--smoothness 2.0 --method hybrid --quality high --neighbors 40`
 3. **For preserving fine details**: Use `--method ball_pivoting --quality high --neighbors 20 --smoothness 0.5`
+
+## Direct Mesh Conversion
+
+Using the new direct mesh conversion functionality (`gs_to_mesh.py`), you can now convert 3DGS files to mesh formats in a single step:
+
+```bash
+3dgs-to-mesh input.ply --output output_mesh.obj --method hybrid --quality ultra --fill_holes
+```
+
+This direct conversion internally uses the same two-step process (3DGS→point cloud→mesh) but provides a simplified interface with all the same mesh generation options.

@@ -12,6 +12,8 @@ A Python library to convert 3D Gaussian Splatting (3DGS) format data to CSV form
 - Convert 3DGS format to standard point cloud format
 - Convert point cloud data to/from CSV format for easy editing
 - Tools for comparing 3DGS files and analyzing differences
+- Merge multiple 3DGS files into a single scene
+- Apply transformations (translation, scaling) to 3DGS files
 - Verified compatibility with SuperSplat for visualization
 - Point cloud data verified with CloudCompare
 
@@ -91,6 +93,19 @@ csv_path, _ = convert_3dgs_to_csv('model.ply')
 restored_ply = convert_csv_to_3dgs(csv_path, None)
 ```
 
+### Merging and Transforming 3DGS Files
+
+```python
+from src import merge_3dgs_files, create_transformed_copy
+
+# Create a transformed copy with 10cm translation on X-axis
+transformed_ply = create_transformed_copy('model.ply', 'model_moved.ply', 
+                                         {'translate': [0.1, 0, 0]})
+
+# Merge original and transformed models
+merged_ply = merge_3dgs_files('model.ply', transformed_ply, 'merged_scene.ply')
+```
+
 ### Point Cloud Workflows
 
 ```python
@@ -158,6 +173,18 @@ Convert point cloud to 3DGS:
 pointcloud-to-3dgs input_pointcloud.ply original.ply --output_ply restored.ply
 ```
 
+Merge two 3DGS files:
+
+```bash
+merge-gs file1.ply file2.ply --output merged.ply --translate-x 0.1
+```
+
+Convert 3DGS to mesh:
+
+```bash
+3dgs-to-mesh input.ply --output output_mesh.obj --method hybrid --quality high
+```
+
 Convert point cloud to CSV:
 
 ```bash
@@ -186,8 +213,9 @@ This project has been tested with the following visualization tools:
 
 - **SuperSplat**: For 3D Gaussian Splatting format files (.ply)
 - **CloudCompare**: For point cloud format files (.ply)
+- **Blender**: For mesh format files (.obj, .ply, .stl)
 
-All point cloud data conversions have been verified using CloudCompare to ensure proper structure and visual representation.
+All point cloud data conversions have been extensively tested using CloudCompare to ensure proper structure, color representation, and export compatibility. Mesh outputs have been verified with Blender to confirm proper mesh topology and compatibility.
 
 ## API Reference
 
@@ -215,6 +243,33 @@ Converts CSV format data to 3DGS format (PLY).
 
 **Returns**:
 - str: Path of the generated PLY file
+
+### Merge and Transform Functions
+
+#### merge_3dgs_files(file1, file2, output_file=None, transform=None)
+
+Merges two 3D Gaussian Splatting files into a single file.
+
+**Arguments**:
+- `file1` (str): Path to the first 3DGS file
+- `file2` (str): Path to the second 3DGS file
+- `output_file` (str, optional): Path to the output merged 3DGS file
+- `transform` (dict, optional): Transformation to apply to the second file (e.g. `{'translate': [0.1, 0, 0]}`)
+
+**Returns**:
+- str: Path of the generated merged 3DGS file
+
+#### create_transformed_copy(input_ply, output_ply, transformation)
+
+Creates a transformed copy of a 3DGS file with specified transformations.
+
+**Arguments**:
+- `input_ply` (str): Path to input PLY file
+- `output_ply` (str): Path to output transformed PLY file
+- `transformation` (dict): Dictionary with transformation parameters (e.g. `{'translate': [0.1, 0, 0], 'scale': [1.5, 1, 1]}`)
+
+**Returns**:
+- str: Path to transformed PLY file
 
 ### Point Cloud Conversion Functions
 

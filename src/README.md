@@ -12,9 +12,11 @@ This directory (`src/`) contains the main source code for editing and converting
 | `gs_to_pointcloud.py` | Convert 3DGS files to standard point cloud format | `convert_3dgs_to_pointcloud()` |
 | `pointcloud_to_gs.py` | Convert point cloud to 3DGS format | `convert_pointcloud_to_3dgs()` |
 | `pointcloud_to_csv.py` | Convert between point cloud and CSV formats | `convert_pointcloud_to_csv()`, `convert_csv_to_pointcloud()` |
-| `pointcloud_to_mesh.py` | Convert point cloud to mesh format | `convert_pointcloud_to_mesh()`, `convert_3dgs_to_mesh()` |
+| `pointcloud_to_mesh.py` | Convert point cloud to mesh format | `convert_pointcloud_to_mesh()` |
+| `gs_to_mesh.py` | Convert 3DGS directly to mesh format | `convert_3dgs_to_mesh()` |
 | `compare_gs.py` | Compare two 3DGS files and analyze differences | `compare_3dgs_files()` |
 | `color_utils.py` | Utility functions for color information processing | `detect_color_properties()`, `convert_standard_to_sh_color()` |
+| `merge_gs.py` | Merge multiple 3DGS files and apply transformations | `merge_3dgs_files()`, `create_transformed_copy()` |
 
 ## Detailed Explanation
 
@@ -52,6 +54,10 @@ Performs conversion between point cloud and CSV formats. Enables simple editing 
 
 Provides conversion from point cloud to mesh formats (OBJ, PLY, etc.). This module implements multiple mesh reconstruction algorithms (Poisson, Ball Pivoting, Alpha Shape, Hybrid, etc.).
 
+#### gs_to_mesh.py
+
+Provides direct conversion from 3DGS to mesh formats (OBJ, PLY, STL). This module acts as a convenient wrapper that first converts 3DGS to point cloud format, then applies mesh reconstruction algorithms. It offers the same reconstruction methods and quality options as the pointcloud_to_mesh module.
+
 #### compare_gs.py
 
 Compares two 3DGS files and analyzes differences in detail. Helpful for verifying data consistency after conversion or editing.
@@ -59,6 +65,10 @@ Compares two 3DGS files and analyzes differences in detail. Helpful for verifyin
 #### color_utils.py
 
 Provides utility functions for color information processing. Includes functionality for detecting and converting Spherical Harmonics color format, properly handling color information in 3DGS.
+
+#### merge_gs.py
+
+Provides functionality for merging multiple 3DGS files into a single file and creating transformed copies. This module enables the creation of complex scenes by combining multiple models and applying spatial transformations (translation, scaling) to 3DGS files.
 
 ## Command Line Execution
 
@@ -72,5 +82,6 @@ Each module is equipped with a command line interface and is provided as the fol
 - `csv-to-pointcloud.exe` - Convert CSV file to point cloud
 - `compare-gs.exe` - Compare two 3DGS files
 - `3dgs-to-mesh.exe` - Convert 3DGS file to mesh
+- `merge-gs.exe` - Merge multiple 3DGS files into a single file
 
 For detailed usage instructions, refer to the `--help` option for each command line tool.

@@ -29,6 +29,7 @@ setup(
             "csv-to-pointcloud=src.pointcloud_to_csv:main_csv_to_ply",
             "compare-gs=tools.compare_gs:main",
             "3dgs-to-mesh=src.pointcloud_to_mesh:main_3dgs_to_mesh",
+            "merge-gs=src.merge_gs:main",
         ],
     },
     install_requires=[

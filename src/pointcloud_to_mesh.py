@@ -867,10 +867,5 @@ def main():
         print("Conversion failed")
         sys.exit(1)
 
-# Add the missing entry point function that the executable is looking for
-def main_3dgs_to_mesh():
-    """Entry point for the 3dgs-to-mesh script"""
-    main()
-
 if __name__ == "__main__":
     main()
