@@ -124,14 +124,20 @@ Running this sample will generate the following files (for example, with Haniwa.
 ### 4. Point Cloud Conversion Sample
 
 ```bash
-python pointcloud_convert_sample.py [--input_ply YOUR_MODEL.ply]
+python pointcloud_convert_sample.py [--input_ply YOUR_MODEL.ply] [--no_color]
 ```
 
 Running this sample will generate the following files:
-- `MODEL_pointcloud.ply` - Point cloud format file
+- `MODEL_pointcloud.ply` - Point cloud format file (with color information)
 - `MODEL_pointcloud.csv` - CSV file converted from the point cloud
-- `MODEL_from_csv.ply` - Restored point cloud from edited CSV
+- `MODEL_edited.ply` - Edited point cloud from CSV file
 - `MODEL_from_pointcloud.ply` - 3D Gaussian Splatting file converted from the point cloud
+
+When using the `--no_color` option, the generated files will have different names:
+- `MODEL_pointcloud_nocolor.ply` - Point cloud without color information
+- `MODEL_pointcloud_nocolor.csv` - CSV file without color data
+- `MODEL_edited_nocolor.ply` - Edited point cloud without color
+- `MODEL_from_pointcloud_nocolor.ply` - 3D Gaussian Splatting file converted from colorless point cloud
 
 ### 5. Mesh Conversion Sample
 
